@@ -1,0 +1,13 @@
+{
+  "id": "openclaw-bidi-formatter",
+  "name": "OpenClaw BiDi Formatter",
+  "description": "Formats mixed RTL/LTR WhatsApp text at OpenClaw's final outbound delivery boundary.",
+  "activation": {
+    "onStartup": true,
+    "onChannels": ["whatsapp"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}

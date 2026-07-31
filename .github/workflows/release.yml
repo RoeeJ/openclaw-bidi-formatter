@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # The version-bump commit is pushed with GITHUB_TOKEN, which normally does
+    # not trigger a second run. This guard also prevents loops if that policy
+    # changes or a maintainer replays the commit using a personal token.
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          registry-url: https://registry.npmjs.org
+          scope: "@roeej"
+      - run: npm test
+      - name: Bump the patch version
+        id: version
+        run: |
+          # setup-node writes an ephemeral auth .npmrc. Update package.json
+          # directly so the release number does not depend on npm's Git-clean
+          # check or on runner-owned files.
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from "node:fs";
+          const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
+          const match = packageJson.version.match(/^(\d+)\.(\d+)\.(\d+)$/);
+          if (!match) throw new Error(`Expected a stable x.y.z version, got ${packageJson.version}`);
+          packageJson.version = `${match[1]}.${match[2]}.${Number(match[3]) + 1}`;
+          writeFileSync("package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
+          NODE
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Commit the version, tag it, and push
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore(release): v${VERSION}"
+          git tag "v${VERSION}"
+          git push origin HEAD:main --follow-tags
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        with:
+          script: |
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${process.env.VERSION}`,
+              name: `v${process.env.VERSION}`,
+              generate_release_notes: true,
+            });

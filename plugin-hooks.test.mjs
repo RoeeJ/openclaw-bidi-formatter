@@ -1,0 +1,25 @@
+import assert from "node:assert/strict";
+import { LRI, PDI, RLM } from "./bidi-normalizer.mjs";
+import { registerBidiOutboundHooks } from "./plugin-hooks.mjs";
+
+const hooks = new Map();
+registerBidiOutboundHooks({ on: (name, handler) => hooks.set(name, handler) });
+
+const reply = hooks.get("reply_payload_sending")(
+  { channel: "whatsapp", payload: { text: "מצאתי OpenClaw Gateway חדש." } },
+  { channelId: "whatsapp" }
+);
+assert.equal(reply.payload.text, `${RLM}מצאתי ${LRI}OpenClaw Gateway${PDI} חדש.`);
+
+assert.equal(hooks.get("reply_payload_sending")(
+  { channel: "telegram", payload: { text: "מצאתי OpenClaw Gateway חדש." } },
+  { channelId: "telegram" }
+), undefined);
+
+const explicitSend = hooks.get("message_sending")(
+  { content: "התקנתי v2026.7.1 בהצלחה." },
+  { channelId: "whatsapp" }
+);
+assert.equal(explicitSend.content, `${RLM}התקנתי ${LRI}v2026.7.1${PDI} בהצלחה.`);
+
+console.log("PASS hooks: automatic reply, explicit send, WhatsApp-only scope");

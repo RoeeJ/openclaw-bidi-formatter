@@ -1,0 +1,46 @@
+{
+  "name": "@roeej/openclaw-bidi-formatter",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "An OpenClaw plugin that formats mixed RTL/LTR WhatsApp messages using Unicode bidi isolates.",
+  "keywords": [
+    "openclaw",
+    "whatsapp",
+    "unicode",
+    "bidi",
+    "rtl",
+    "ltr"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RoeeJ/openclaw-bidi-formatter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RoeeJ/openclaw-bidi-formatter/issues"
+  },
+  "homepage": "https://github.com/RoeeJ/openclaw-bidi-formatter#readme",
+  "files": [
+    "bidi-normalizer.mjs",
+    "rtl-strong-ranges.generated.mjs",
+    "plugin-hooks.mjs",
+    "index.mjs",
+    "openclaw.plugin.json",
+    "README.md",
+    "docs/"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "scripts": {
+    "test": "node test.mjs && node plugin-hooks.test.mjs"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.7.1"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.mjs"
+    ]
+  }
+}
