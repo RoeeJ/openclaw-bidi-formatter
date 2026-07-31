@@ -1,6 +1,6 @@
 {
   "name": "@roeej/openclaw-bidi-formatter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "An OpenClaw plugin that formats mixed RTL/LTR WhatsApp messages using Unicode bidi isolates.",
   "keywords": [
