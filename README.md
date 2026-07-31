@@ -4,6 +4,12 @@ An OpenClaw plugin for readable mixed-direction WhatsApp messages. It fixes
 the *display* of RTL/LTR text at the final outbound delivery boundary, without
 reversing, translating, or otherwise changing the logical message text.
 
+For WhatsApp-originated agent turns, it also adds a fixed, channel-specific
+authoring rule before the model writes: prefer unordered bullets over numbered
+lists and write the base-direction prose before any mixed-direction technical
+term. This rule is unconditional for WhatsApp; it does not inspect, classify,
+or rewrite message content.
+
 > **Scope:** WhatsApp outbound text only. Other channels are deliberately not
 > enabled until they have their own client-level compatibility tests.
 
@@ -63,6 +69,10 @@ should still apply.
 - Is idempotent: delivery retries do not stack extra control characters.
 - Uses `reply_payload_sending` for normal replies and `message_sending` for
   explicit calls to the OpenClaw `message` tool.
+- Uses `before_prompt_build` for WhatsApp-originated turns only, adding stable
+  authoring guidance that prefers `•` bullets over ordered lists and keeps
+  natural-language context before technical LTR terms. Other channels do not
+  receive this prompt contribution.
 
 The control characters are intentionally invisible. They alter only layout;
 copying a normal prose message may include them. Code spans and fenced code

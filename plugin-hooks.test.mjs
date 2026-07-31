@@ -22,4 +22,16 @@ const explicitSend = hooks.get("message_sending")(
 );
 assert.equal(explicitSend.content, `${RLM}התקנתי ${LRI}v2026.7.1${PDI} בהצלחה.`);
 
-console.log("PASS hooks: automatic reply, explicit send, WhatsApp-only scope");
+const whatsappPrompt = hooks.get("before_prompt_build")(
+  { prompt: "סכם", messages: [] },
+  { messageProvider: "whatsapp" }
+);
+assert.match(whatsappPrompt.appendSystemContext, /unordered bullets/u);
+assert.match(whatsappPrompt.appendSystemContext, /Do not manually insert Unicode/u);
+
+assert.equal(hooks.get("before_prompt_build")(
+  { prompt: "Summarize", messages: [] },
+  { messageProvider: "telegram" }
+), undefined);
+
+console.log("PASS hooks: WhatsApp prompt guidance, automatic reply, explicit send, WhatsApp-only scope");
